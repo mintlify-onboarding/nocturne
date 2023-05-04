@@ -1,0 +1,36 @@
+{
+    "name": "Nocturne",
+    "logo": {
+      "light": "/logo/light.png",
+      "dark": "/logo/dark.png"
+    },
+    "favicon": "/favicon.png",
+    "colors": {
+      "primary": "#",
+      "light": "#",
+      "dark": "#"
+    },
+    "topbarLinks": [
+      {
+        "name": "Twitter",
+        "url": "https://twitter.com/nocturne_xyz"
+      }
+    ],
+    "anchors": [
+      {
+        "name": "",
+        "icon": "",
+        "url": ""
+      }
+    ],
+    "navigation": [
+      {
+        "group": "",
+        "pages": [""]
+      }
+    ],
+    "footerSocials":
+      {
+          "twitter": "https://twitter.com/nocturne_xyz"
+      }
+  }
