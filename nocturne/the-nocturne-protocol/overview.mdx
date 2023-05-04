@@ -1,0 +1,66 @@
+---
+title: "Overview"
+---
+
+## High Level
+
+Nocturne is a private account abstraction protocol.
+
+At a high level, users can deposit assets into the protocol to one of their stealth addresses. Later, in the future, they can prove ownership of said assets in zero-knowledge for use in arbitrary anonymous contract interactions or confidential payments.
+
+## Deposits
+
+In order to minimize the inflow of illicit funds, deposits into Nocturne require a screening process. A permissioned off-chain actor will inspect all deposits and decide to approve/complete or reject them.
+
+Deposits are carried out through the DepositManager contract. A user instantiates a deposit by specifying their stealth address to deposit to and escrowing the desired funds in the DepositManager. An off-chain screener will then see the deposit request and decide whether or not to accept it. If it accepts, the deposit screener will sign a hash of the request and complete the deposit for the user. If not, the user is free to retrieve their escrowed funds. See the following diagram for a high level view of the workflow.
+
+![](/images/nocturne/the-nocturne-protocol/deposits-diagram.png)
+
+An example deposit
+
+## Operations
+
+Once funds have been deposited, all usage of private funds are initiated from a _single_ Teller contract, which takes a bundle of operations, verifies their proofs, then delegates the processing and execution of individual operations to the Handler contract. To initiate a dapp interaction, a user constructs an `Operation`, which encodes some assets (ERC20, 721, or 1155 tokens) to spend and a sequence of contract calls. Nocturne guarantees that:
+
+1. 1.  
+Right before contract calls are executed, the Handler contract holds _exactly_ the assets declared in `Operation`.
+
+2. 2.  
+Contract calls are carried out directly from the Handler contract.
+
+3. 3.  
+After the calls are completed, all leftover tokens in the Handler contract are "refunded" to the initiating user's stealth address.
+
+To make sure each user `Operation` only spends the assets that the user has declared, deposited assets are held by the Teller, separate from where execution occurs. The Handler contract will request only those assets declared by the `Operation`, then perform the contract calls. Once the contract calls are made, the Handler will send any remaining or new funds back to the Teller. The Handler will then create new note commitments for these assets belonging to the user. See the following diagram for a high level view of the workflow.
+
+![](/images/nocturne/the-nocturne-protocol/protocol-diagram-gitbook.png)
+
+An example DEX operation
+
+#### Operation
+
+The main way users can use their funds within Nocturne is by submitting an `Operation`.
+
+```
+struct Operation {
+    JoinSplit[] joinSplits;
+    NocturneAddress ownerAddr;
+    Action[] actions;
+    ...
+}
+
+struct Action {
+    address contractAddress;
+    bytes encodedFunction;
+}
+```
+
+The semantics of an operation is as follows:
+
+* Each joinsplit specifies an asset and amount to "unwrap" for the contract call (and optionally a confidential payment). The list `joinSplits` specifies all the assets the user wants to unwrap for their operation as well as any confidential payments.
+
+* The `ownerAddr` is a stealth address of the user who is initiating the transaction.
+
+* The array `actions` encodes the intended contract calls of the operation.
+
+Given an `Operation` with valid inputs, the Handler contract will unwrap all tokens, perform the provided contract calls, then refund any remaining tokens back to the user anonymously.

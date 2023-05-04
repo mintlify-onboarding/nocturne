@@ -1,0 +1,34 @@
+---
+title: "One-Pager"
+description: "A private, composable account layer for Ethereum"
+---
+
+## Overview
+
+Nocturne is a protocol enabling private, composable accounts on Ethereum. Nocturne allows users to deposit or receive assets from EOAs and contracts to private, stealth addresses. Then, in the future, a user can prove ownership of privately owned assets in zero knowledge for use in arbitrary transactions or confidential transfers. More specifically, Nocturne enables:
+
+* Anonymous usage/reception of any token (ERC20/721/1155) with/from existing EOAs and on-chain applications
+
+* Confidential payments to other stealth addresses (hidden sender, recipient, and amount)
+
+* Provable disclosure of asset ownership (solvency) and transaction history (compliance)
+
+![](/images/nocturne/introduction/protocol-diagram-gitbook.png)
+
+_Flow chart for an anonymous DEX swap_
+
+## How Users Interact With Nocturne
+
+Given its flexibility as an underlying protocol, the UX of Nocturne can take several different forms. The UX can be as minimal as a private asset vault to as feature-full as a private-preserving browser or mobile wallet. Below are several possible product forms Nocturne may take.
+
+#### Private Asset Vault
+
+The simplest form Nocturne can take is a private asset vault which allows users to privately store their assets long-term, earn yield on idle assets, and withdraw to burner wallets for higher-touch activities like trading. This will be the first end-user product built atop the protocol and released to users.
+
+#### Backend for Private Payments
+
+Instead of making payments directly to a recipient's EOA, one can simply send funds into Nocturne, assigning ownership of those funds to one of the recipient's stealth addresses. This allows for use cases such as shielded payroll for on-chain organizations. For even stronger privacy guarantees (hidden amounts), a user/organization can pay from one Nocturne account to another via confidential payments.
+
+#### Privacy-Preserving Smart Contract Wallet
+
+Nocturne's off-chain SDK can be integrated into existing wallet clients to support a normal wallet experience but with _built-in_ asset privacy. In fact, the first iteration of our product does this to a limited extent by integrating the SDK into a custom MetaMask Snap. Taking our initial work several steps further, you can, in theory, build a wallet that lets users transact as they normally do with asset privacy built in under the hood.

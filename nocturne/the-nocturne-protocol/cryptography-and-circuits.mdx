@@ -1,0 +1,45 @@
+---
+title: "Cryptography and Circuits"
+---
+
+### Cryptography and Zero-Knowledge Circuits
+
+Nocturne cryptography and zero-knowledge circuits are designed with two overarching criteria:
+
+* Optimize for minimal end-user friction by minimizing proof generation delay and on-chain proof verification overhead.
+
+* Use battle-tested cryptography and tooling when possible.
+
+For our V1 design, we utilize:
+
+1. 1.  
+Circom and SnarkJS for working with zero-knowledge circuits. The underlying proof system is Groth16.
+
+2. 2.  
+The Poseidon hash function as a hash function that's efficient in-circuit.
+
+3. 3.  
+The Baby Jubjub curve as an elliptic curve that's efficient in-circuit.
+
+4. 4.  
+Schnorr signatures as the primary authentication scheme
+
+5. 5.  
+A novel yet simple one-time anonymous address scheme
+
+6. 6.  
+A shielded pool design that iterates on Zcash Sapling, Aztec Connect, Semaphore, and Flax.
+
+7. 7.  
+Batch verification for Groth16 proofs to reduce on-chain verification cost.
+
+8. 8.  
+Batch ZK merkle tree updates to eliminate the need to compute Poseidon hashes on-chain.
+
+Our design yields the following preliminary performance numbers:
+
+* Due to our gas optimizations (point 6 and 7 above), on-chain gas overhead of an operation is typically only 200-250k, depending on the number and amount of assets spent and received. In contrast, Tornado Cash required more than 1 million gas for deposits.
+
+* The transaction circuit can be proved in under 2 seconds in a browser. Due to our "zk" subtree update mechanism, there is an additional \~6 seconds latency between transaction settlement and asset availability (e.g. output of a swap operation cannot be used in another swap until after this delay).
+
+This section contains detailed specifications for all of nocturne's cryptography and circuits. Be warned - it contains math, and it assumes some background knowledge in cryptography.
