@@ -57,7 +57,23 @@
                     "nocturne/the-nocturne-protocol/joinsplit-circuit",
                     "nocturne/the-nocturne-protocol/subtree-update-circuit"
                 ]
-            }
+            },
+            {
+              "group": "Off-Chain Actors",
+              "pages": [
+                  "nocturne/the-nocturne-protocol/off-chain-actors",
+                  "nocturne/the-nocturne-protocol/deposit-screener",
+                  "nocturne/the-nocturne-protocol/bundler",
+                  "nocturne/the-nocturne-protocol/subtree-updater"
+              ]
+          },
+          {
+            "group": "User-Facing Components",
+            "pages": [
+                "nocturne/user-facing-components/sdks",
+                "nocturne/user-facing-components/user-facing-endpoints"
+            ]
+          }
         ]
       }
     ],

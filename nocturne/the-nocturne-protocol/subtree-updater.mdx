@@ -1,0 +1,6 @@
+---
+title: "Subtree Updater"
+description: "Updates the note commitment tree in a gas-efficient manner"
+---
+
+Nocturne maintains a Poseidon Merkle tree to keep track of user balances cryptographically. Nocturne employs a technique to replace expensive on-chain Poseidon hashes with cheaper SHA256 hashes and Groth16 proofs. The subtree updater polls for new Merkle leaves and periodically submits zk proofs to update the tree's root.

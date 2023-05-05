@@ -1,0 +1,110 @@
+---
+title: "Subtree Update Circuit"
+description: "Details of subtree update mechanism and circuit, including PIs, encodings, and constraints"
+---
+
+## Mechanism
+Our biggest gas bottleneck used to be Poseidon hashes for inserting new note commitments into the commitment tree. It cost us around 1.3M gas to insert a single note.
+
+To avoid this, we employ a technique that we call "subtree updates" to update the [commitment tree](/nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits) in batches without performing any Poseidon hashes on-chain.
+
+There are two cases for an insertion:
+
+1. We're inserting a Note that was constructed on-chain. This is the case for refunds and deposits. In this case, we'd have to compute the note commitment first, and then insert the note
+2. We're inserting a note commitment directly. This is the case for the output notes for JoinSplits, whose contents are never revealed on-chain.
+
+To implement subtree updates, we wrote a library called OffchainMerkleTree. The OffchainMerkleTree has the following state variables:
+
+1. `root`: the current root of the Merkle tree
+2. `count`: the number of leaves in the tree. This does not include leaves that are queued but have yet to be inserted.
+3. `batch`: a `uint256` array of size `B`, where `B` is the batch size, chosen upon instantiation. We use a batch size of 16. This array is used to track a batch of insertion digests, which we will define below.
+4. `batchLen`: a length counter used to indicate how many new _insertion digests_ are queued up in `batch`. 
+5. `accumulatorQueue`: a queue of accumulator hashes, which we will define below.
+
+Whenever an insertion needs to take place, instead of performing it immediately, we will compute the **_insertion digest_**, which is defined as follows:
+
+1. If we're inserting a `note`, the insertion digest is `sha256(note)`.
+2. If we're inserting a `noteCommitment`, the insertion digest is simply the note commitment
+
+Then, we will "push" the insertion digest into batch and increment `batchLen`. 
+
+When batch is full (i.e. `batchLen = B`), then we compute the batch's `accumulatorHash`, which is defined as `sha256(batch)` and enqueue it into `accumulatorQueue`.
+
+> If we force `B` to be a power of two, then every batch will fall on a subtree of the commitment tree, making the batch insertion logic delightfully simple. This is also why we call it a "subtree update"
+
+This is all more or less a fancy way to "queue" up batches of insertions in a manner such that we can avoid needing to store all of the individual insertions on-chain.
+
+Next, we introduce an off-chain actor called the subtree updater. Anyone can run a subtree updater, and it plays the following role:
+
+1. Constantly observe new insertions as they are enqueued on-chain.
+2. Whenever a batch is filled, pull that batch's accumulatorHash from the chain and apply the batch to a local copy of the tree.
+3. generate a ZKP that proves the following statement: if one were to apply the batch whose hash is `accumulatorHash` to a local copy of the tree with root `root`, the new root would be `newRoot`.
+4. submit that to the chain by calling a method `subtreeUpdate(proof, newRoot)`
+5. `subtreeUpdate` will verify the proof against the current `root` and the tip of the `accumulatorQueue`.
+6. If the verifier accepts, `subtreeUpdate` can conclude that `newRoot` is correct, and it will 
+    1. dequeue from `accumulatorQueue`
+    2. set `root` to `newRoot`
+7. If the verifier does not accept, `subtreeUpdate` will revert.
+
+In this scheme, never have to do any Poseidon hashing on-chain. While sha256 in-circuit is too expensive for a client, the Subtree Updater role can be carried out by a powerful-ish server - as long as someone is updating the tree, then the system will continue processing transactions.
+
+> In practice, the subtree update prover isn't that expensive. It only takes ~6s with rapidsnark on an Ubuntu desktop with an 16-core AMD Ryzen 9 5950X and 64GB of RAM.
+
+The gas cost per insertion is now the cost to verify the subtree update proof split B ways, plus the gas cost of a few more (warm) storage reads/writes for the batch array and `accumulatorQueue`.
+
+## Encodings
+
+The subtree update circuit uses EncodedNote as defined in the [JoinSplit Circuit](/nocturne/the-nocturne-protocol/joinsplit-circuit).
+
+The only other special encoding we need for this circuit is to deal with the fact that accumulatorHash is a 256-bit value, which is not guaranteed to fit in an Fp element. 
+
+Another public input for the circuit is the path to the root of the subtree spanning our batch update. The way this is encoded requires a bit more detail about the commitment tree's structure.
+
+Our note commitment tree is quaternary - each branch node has four children, not two. That means the "path" is not a sequence of booleans (left vs right), but a sequence of numbers between 0 and 4. For binary trees, usually people use the fact that the big-endian binary representation of the index of a given leaf is the path - starting at the root, each bit when read left-to-right tells us which way to go.  This would be a `D - log2(B)` bit unsigned integer, where `D` is the depth of the tree and B is the batch size.
+
+For our quaternary tree, this is almost identical - the only difference is that we read the big-endian bit representation of the index two bits at a time, giving us a sequence of two-bit numbers 0-4 which tell us which child to traverse instead of a sequence of bits. If our tree is depth `D` then this will be a `2*D - log2(B)` bit number. In our case, `D = 16` and `B = 16,` which means our path will take up 28 bits.
+
+This gives us plenty of room so we can pack the 3 most-significant bits of `accumulatorHash` into the path's field element. The resulting encoding is as follows:
+
+1. `accumulatorHash` is the Fp element represented by the 253 least-significant bits of the "actual" 256-bit `accumulatorHash`
+2. `encodedPathAndHash` is the Fp element represented by the following bits, from most-significant to least-significant:
+    1. `254 - (2*D - log2(B)) - 3` `0` `bits` 
+    2. the 3 most-significant bits of the actual `accumulatorHash`
+    3. the `2*D - log2(B)` bits of the path from the root of the commitment tree to the root of the subtree spanning the batch insertion
+
+## Statement to Prove
+
+The Subtree Update circuit has the following public inputs:
+
+1. `accumulatorHash` - the 253 least-significant bits of the hash at the tip of the accumulatorQueue on-chain
+2. `encodedPathAndHash` - a bit-packed field element containing the path from the root of the commitment tree to the root of the subtree spanning the batch and the 3 most-significant bits of `accumulatorHash`.
+    - For notation's sake, I will use `encodedPathAndHash.hashBits` to refer to the 3 hash bits, and `encodedPathAndHash.path` to refer to the `2*D - log2(B)` path bits
+3. `oldRoot` - the old root of the commitment tree
+4. `newRoot` - the claimed new root of the commitment tree
+
+We also define the constant `EMPTY_SUBTREE_ROOT`, which is the root of the depth-`log2(B)` subtree containing `B` zeros.
+
+And requires the following private data:
+
+1. `SubtreeMembershipProof` - a depth` 2*D - log2(B)`-bit Merkle membership proof against `newRoot` whose claimed leaf is the root of the subtree
+2. EmptySubtreeMembershipProof - a depth `2*D - log2(B)`-bit Merkle membership proof against `oldRoot` whose claimed `leaf` is `EMPTY_SUBTREE_ROOT`.
+3. `notes` - a size `B` array `EncodedNote` for each leaf in the tree. For note commitment insertions, the corresponding entry is ignored.
+4. `leaves` - a size `B` array containing the leaves of the subtree - that is, the note commitments of every note to be inserted, no matter which insertion case it is.
+5. `bitmap` - `B` bits indicating which insertions are note insertions and which insertions are note commitment insertions. If `bitmap[i] == 1`, then the ith insertion should be treated as a `note` insertion, not a note commitment insertion.
+6. `preimage` - a size `B*256` bit array containing every insertion digest concatenated together.
+
+We prove that the following conditions hold true, converting to/from big-endian bit representation as needed:
+
+1. for the `i`th `bit` of `bitmap`:
+    1. `bit` is `0` or `1`
+    2. if `bit == 1`, then
+        1. `preimage[i*256..(i+1)*256] = sha256(notes[i])`
+        2. `leaves[i] = noteCommit(note)`, where `noteCommit` computes the note commitment of a note.
+    3. otherwise, `preimage[i*256 + 2..(i+1)*256] = leaves[i]`
+2. `encodedPathAndHash.hashBits || accumulatorHash = sha256(preimage)`
+3. `SubtreeMembershipProof.leaf` is the root of the depth-`log4(B)` subtree whose leaves are `leaves`.
+4. `EmptySubtreeMembershipProof.leaf` is the root of an empty depth-`log4(B)` subtree.
+5. `EmptySubtreeMembershipProof.path` represents the same path as `encodedPathAndHash.path`
+6. `SubtreeMembershipProof.path` represents the same path as `encodedPathAndHash.path`
+7. `EmptySubtreeMembershipProof` is a valid Merkle membership proof against `oldRoot`. This asserts that the subtree was empty before the insertion.
+8. `SubtreeMembershipProof` is a valid Merkle membership proof against `newRoot`. This asserts that newRoot is the correct root resulting from the subtree update.

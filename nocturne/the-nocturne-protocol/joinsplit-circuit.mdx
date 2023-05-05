@@ -1,0 +1,96 @@
+---
+title: "JoinSplit Circuit"
+description: "Details of JoinSplit Circuit, including PIs, encodings, and constraints (in english)"
+---
+
+## Encodings
+For the purposes of this circuit, we define a few data structures and standard encodings to field elements.
+
+## Asset Encoding
+Firstly, we define an Asset by the following struct:
+
+```c
+struct Asset {
+    // an enum representing the type of the asset
+    AssetType assetType,
+    // a 160-bit address
+    address assetAddr,
+    // the "ID" of the asset. This is only relevant for ERC721 and ERC1155
+    uint256 assetId,
+}
+
+enum AssetType {
+    // maps to integer value `0`
+    ERC20,
+    // maps to integer value `1`
+    ERC721,
+    // maps to integer value `2`
+    ERC1155
+}
+```
+
+To encode the asset, we transform it into the following form:
+```c
+struct EncodedAsset {
+    // the asset address with the top-3 bits of `assetId`
+    // and `assetType` packed into it
+    uint256 encodedAssetAddr;
+    // the bottom 253 bits of `assetId`
+    uint256 encodedAssetId;
+}
+```
+Both fields of `EncodedAsset` are guaranteed to be valid elements of Fp. We define the encoding for each as follows:
+
+1. `encodedAssetId` is the number represented by the 253 least-significant bits of `assetId`.
+2. `encodedAssetAddr` is defined as follows, from most-significant to least-significant:
+- 3 `0` bits
+- the 3 most-significant bits of `assetId`
+- 88 bits that are left unspecified (currently they are ignored)
+- 2 bits representing `assetType` - `00` for `ERC20`, `01` for `ERC721`, `10` for `ERC1155`.
+- 160 bits representing `assetAddr`.
+
+## Note Encoding
+We define the Note and EncodedNote structs as follows:
+
+```c
+struct Note {
+    // an anonymous stealth address for the note's owner
+    SteatlhAddress owner;
+    // a nonce that must be a valid element of the BN254 Scalar field
+    uint256 nonce;
+    // the asset the note is for
+    Asset asset;
+    // the amount of value in `asset` the note "holds"
+    // this must be less than 2^252
+    uint256 value;
+}
+
+struct StealthAddress {
+  // the X coordinate of the first component of the stealth address
+  uint256 h1X;
+  // the Y coordinate of the first component of the stealth address
+  uint256 h1Y;
+  // the X coordinate of the second component of the stealth address
+  uint256 h2X;
+  // the Y coordinate of the second component of the stealth address
+  uint256 h2Y
+}
+
+struct EncodedNote {
+    // same as above
+    StealthAddress owner;
+    // same as above
+    uint256 nonce;
+    // pull out from EncodedAsset
+    uint256 encodedAssetAddr;
+    // pull out from EncodedAsset
+    uint256 encodedAssetId;
+    // same as above
+    uint256 value;
+}
+```
+
+_Within nocturne, all amounts and balances are forced to be 252-bit integers_. This ensures it's impossible to overflow the field.
+
+The `StealthAddress` struct is a "flattened" form of a [stealth address](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses##addresses). We recall that pair of Baby Jubjub curve elements  , and represent the  and  coordinates of both curve elements as struct fields.
+The encoding process for a Note is to encode the asset and then pull out the encodedAssetAddr and encodedAssetId fields. 

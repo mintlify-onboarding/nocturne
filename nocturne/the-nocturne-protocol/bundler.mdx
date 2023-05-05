@@ -1,0 +1,10 @@
+---
+title: "Bundler"
+description: "Submits operations on behalf of users"
+---
+
+Bundlers are permissionless actors that collect "bundles" of Nocturne operations and submit them on-chain. Users subsidize bundler gas costs with additional tokens unwrapped in their operations.
+
+Bundling is permissionless and anyone can run a bundling service. Nocturne bundlers are akin to account-abstraction (EIP-4337) bundlers.
+
+Nocturne utilizes batch verification of Groth16 proofs for all operations inside a bundle. This means that the more operations in a bundle, the less the verification cost per operation. Bundlers can decide on the bundle size and contents by weighing a bundle's transaction cost against and the user gas fees included in the bundle's operations.

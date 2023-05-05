@@ -24,27 +24,3 @@ Consider a user Alice. She can generate any number of one-time stealth addresses
 Let's say Alice has a friend named Bob. She trusts Bob, so Alice shares her canonical address with him. He can generate stealth addresses to pay Alice without revealing her canonical address or knowing her viewing key.
 
 Now consider a third user named Charlie who's a stranger to Alice, so Alice doesn't want to give him her canonical address. Instead, Alice can give him one of her stealth addresses, or he can get one from Bob. Then, if Charlie wants to pay Alice, he can re-randomize the stealth address and pay Alice using the re-randomized address. 
----
-title: "Keys, Signatures, and Addresses"
-description: "Details about algebraic primitives, key derivation, canonical address, address re-randomization, and signatures"
----
-
-## Algebraic Primitives
-
-Unless otherwise specified, all values are assumed to be elements of the Scalar field of BN254 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197). We will refer to this field as the "BN254 Scalar field" or  for short. We will use  to refer to the order of the BN254 scalar field.
-
-For all elliptic curve cryptography, including our addressing and signature schemes, we use the Baby Jubjub curve, the curve whose base field is Fp as defined in [EIP-2494](https://eips.ethereum.org/EIPS/eip-2494). All operations are performed in Baby Jubjub's prime-order subgroup, which we will refer to as "Baby Jubjub", or G (blackboard "G" as opposed to regular "G") for short.
-
-We will use r to refer to the order of Baby Jubjub's scalar field (again, the prime-order subgroup, not the curve group), and we will refer that scalar field as "Baby Jubjub Scalar field", or Fr for short.
-
-We will use additive notation. More specifically we use...
-"+" to denote curve addition or field addition depending on whether we are adding curve elements or field elements
-"•" or juxtaposition to denote field multiplication
-"✕" to denote scalar multiplication, in order to clearly distinguish it from field multiplication
-
-Furthermore, we will use all-capital letters for curve elements and all-lowercase lettrs for field elements.
-
-## Hashing
-We use the Poseidon hash function defined over the Fp, the BN254 scalar field, instantiated using the [parameters set in `circomlib`'s implementation](https://github.com/iden3/circomlib/blob/master/circuits/poseidon_constants.circom). We will denote this function H. 
-
-## Key Derivation

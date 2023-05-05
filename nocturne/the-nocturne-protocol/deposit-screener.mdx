@@ -1,0 +1,8 @@
+---
+title: "Deposit Screener"
+description: "Approves/rejects incoming deposits"
+---
+
+The deposit screener is a permissioned role. At a high level, a screener queries the chain for new user deposit requests and decides whether or not to accept them into the protocol. 
+
+For safety, the deposit screener agent uses a combination of factors (e.g. wallet history, asset balances) to parametrize time delays before making a decision on a deposit. If at the end of the delay, the deposit is still considered safe, the screener will sign a hash of the deposit request and submit it to the DepositManager, completing the user's deposit.
