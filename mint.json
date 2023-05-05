@@ -6,9 +6,9 @@
     },
     "favicon": "/favicon.png",
     "colors": {
-      "primary": "#",
-      "light": "#",
-      "dark": "#"
+      "primary": "#A980E3",
+      "light": "#D6B9FF",
+      "dark": "#7C4EBD"
     },
     "topbarLinks": [
       {
@@ -16,17 +16,26 @@
         "url": "https://twitter.com/nocturne_xyz"
       }
     ],
-    "anchors": [
-      {
-        "name": "",
-        "icon": "",
-        "url": ""
-      }
-    ],
     "navigation": [
       {
-        "group": "",
-        "pages": [""]
+        "group": "Introduction",
+        "pages": [
+            "nocturne/introduction/one-pager",
+            "nocturne/introduction/compliance"
+        ]
+      },
+      {
+        "group": "The Nocturne Protocol",
+        "pages": [
+            "nocturne/the-nocturne-protocol/overview",
+            {
+                "group": "Preliminaries",
+                "pages": [
+                    "nocturne/the-nocturne-protocol/preliminaries",
+                    "nocturne/the-nocturne-protocol/preliminaries"
+                ]
+              }
+        ]
       }
     ],
     "footerSocials":
