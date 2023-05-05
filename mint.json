@@ -10,12 +10,16 @@
       "light": "#D6B9FF",
       "dark": "#7C4EBD"
     },
-    "topbarLinks": [
-      {
-        "name": "Twitter",
-        "url": "https://twitter.com/nocturne_xyz"
-      }
-    ],
+    "anchors": [
+        {
+          "name": "Twitter",
+          "icon": "twitter",
+          "url": "https://twitter.com/nocturne_xyz"
+        }
+      ],
+    "modeToggle": {
+        "default": "dark"
+    },
     "navigation": [
       {
         "group": "Introduction",
@@ -32,9 +36,28 @@
                 "group": "Preliminaries",
                 "pages": [
                     "nocturne/the-nocturne-protocol/preliminaries",
-                    "nocturne/the-nocturne-protocol/preliminaries"
+                    "nocturne/the-nocturne-protocol/keys-and-stealth-addresses",
+                    "nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits"
                 ]
-              }
+            },
+            {
+                "group": "Contracts",
+                "pages": [
+                    "nocturne/the-nocturne-protocol/contracts",
+                    "nocturne/the-nocturne-protocol/deposit-manager",
+                    "nocturne/the-nocturne-protocol/teller",
+                    "nocturne/the-nocturne-protocol/handler"
+                ]
+            },
+            {
+                "group": "Cryptography and Circuits",
+                "pages": [
+                    "nocturne/the-nocturne-protocol/cryptography-and-circuits",
+                    "nocturne/the-nocturne-protocol/keys-signatures-and-addresses",
+                    "nocturne/the-nocturne-protocol/joinsplit-circuit",
+                    "nocturne/the-nocturne-protocol/subtree-update-circuit"
+                ]
+            }
         ]
       }
     ],
@@ -43,3 +66,4 @@
           "twitter": "https://twitter.com/nocturne_xyz"
       }
   }
+  

@@ -1,0 +1,50 @@
+---
+title: "Keys and Stealth Addresses"
+description: "An introduction to Nocturne's anonymous addressing scheme"
+---
+
+The core mechanism that allows generalized contract calls through Nocturne is a scheme for re-randomizable addresses, which we call **_stealth addresses_**.
+
+> Vitalik wrote a [blog](https://vitalik.ca/general/2023/01/20/stealth.html) a while back about a scheme he calls "stealth addresses". Our scheme has similar functionality, but is cheaper, more flexible, and leads to better UX.
+
+The main idea is to start by splitting the authority to "view" transactions from the authority to "sign" transactions into two separate "private keys" - a **_viewing key_** and a **_spending key_**.
+
+To avoid complicating key management, the viewing key can be derived from the spending key, but the spending key cannot be derived from the viewing key. In other words:
+
+- Someone with access to only a user's viewing key can trace the user's transactions, but cannot spend the user's funds.
+- Someone with access to the user's spending key can spend the user's funds and trace their transactions
+- Someone without access to either key cannot trace the user's transactions or spend their funds.
+
+From the viewing key, we then derive an associated address, which we refer to as the **_canonical address_**. A user's canonical address is analogous to a user's Ethereum address - it serves as a pseudonym that uniquely identifies an account. 
+
+However, unlike an Ethereum address, any user can **_randomize_** any other user's canonical address into a one-time **_stealth_** address without access to the user's viewing key. This stealth address refers to the same account as the canonical address, however, third parties cannot determine the association (i.e. it "looks random") without access to the corresponding viewing key. In the same manner, any user can also **_re-randomize_** any stealth address and generate new stealth addresses.
+
+Consider a user Alice. She can generate any number of one-time stealth addresses that can only be linked via their viewing key
+
+Let's say Alice has a friend named Bob. She trusts Bob, so Alice shares her canonical address with him. He can generate stealth addresses to pay Alice without revealing her canonical address or knowing her viewing key.
+
+Now consider a third user named Charlie who's a stranger to Alice, so Alice doesn't want to give him her canonical address. Instead, Alice can give him one of her stealth addresses, or he can get one from Bob. Then, if Charlie wants to pay Alice, he can re-randomize the stealth address and pay Alice using the re-randomized address. 
+---
+title: "Keys, Signatures, and Addresses"
+description: "Details about algebraic primitives, key derivation, canonical address, address re-randomization, and signatures"
+---
+
+## Algebraic Primitives
+
+Unless otherwise specified, all values are assumed to be elements of the Scalar field of BN254 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197). We will refer to this field as the "BN254 Scalar field" or  for short. We will use  to refer to the order of the BN254 scalar field.
+
+For all elliptic curve cryptography, including our addressing and signature schemes, we use the Baby Jubjub curve, the curve whose base field is Fp as defined in [EIP-2494](https://eips.ethereum.org/EIPS/eip-2494). All operations are performed in Baby Jubjub's prime-order subgroup, which we will refer to as "Baby Jubjub", or G (blackboard "G" as opposed to regular "G") for short.
+
+We will use r to refer to the order of Baby Jubjub's scalar field (again, the prime-order subgroup, not the curve group), and we will refer that scalar field as "Baby Jubjub Scalar field", or Fr for short.
+
+We will use additive notation. More specifically we use...
+"+" to denote curve addition or field addition depending on whether we are adding curve elements or field elements
+"•" or juxtaposition to denote field multiplication
+"✕" to denote scalar multiplication, in order to clearly distinguish it from field multiplication
+
+Furthermore, we will use all-capital letters for curve elements and all-lowercase lettrs for field elements.
+
+## Hashing
+We use the Poseidon hash function defined over the Fp, the BN254 scalar field, instantiated using the [parameters set in `circomlib`'s implementation](https://github.com/iden3/circomlib/blob/master/circuits/poseidon_constants.circom). We will denote this function H. 
+
+## Key Derivation

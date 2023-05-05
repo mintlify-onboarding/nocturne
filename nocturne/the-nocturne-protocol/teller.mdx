@@ -1,0 +1,14 @@
+---
+title: "Teller"
+description: "Stores assets and serves as entry point for processing bundles"
+---
+
+The Teller contract serves as the entry point for storing deposited funds and processing bundles (of operations). More specifically, the Teller is in charge of two things: escrowing user funds and validating JoinSplit proofs when processing a bundle of operations.
+
+**Storing Funds**
+
+When a deposit is completed from the DepositManager, the Teller contract transfers the assets to itself. It also calls the Handler contract (see next section) to insert the deposit as a note commitment in its Merkle commitment tree. In the future, when the Handler needs to take up assets for executing an operation, it will call the Teller's requestAssets method to gather the necessary funds for execution.
+
+**Validating Proofs**
+
+When a bundler calls processBundle on the Teller, the Teller will batch verify all joinsplit proofs contained within the bundle to amortize gas costs. If the batched proof verification passes, it will pass operations to the Handler contract one-by-one for processing and execution.

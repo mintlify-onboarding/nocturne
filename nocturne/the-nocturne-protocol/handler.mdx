@@ -1,0 +1,26 @@
+---
+title: "Handler"
+description: "Handles private accounting and executes operations"
+---
+
+The Handler executes operations on behalf of the Teller contract. It inherits from the BalanceManager and CommitmentTreeManager contracts. Combined, the Handler is responsible for maintaining the note commitment tree, gathering funds before executing operations, executing operations, and handling refunds after operation submission.
+
+**Maintaining the Note Commitment Tree**
+
+The Handler maintains the protocol's note commitment tree. It inserts new note commitments upon deposits and refunds (received/remaining funds after execution). The tree state is accessed to verify that joinsplits are valid and that notes have not already been spent.
+
+**Gathering Funds for Operations**
+
+Before executing operations, the Handler contract gathers the required funds from the associated Teller contract, ensuring that necessary assets are available for the operation. For each joinsplit, it checks for valid merkle roots and nullifiers before gathering the assets associated with that joinsplit.
+
+**Executing Operation Actions**
+
+The Handler contract is responsible for executing the actions specified in operations. If the operation has been submitted with atomic set to true, the revert of any action in the operation will result in the whole operation reverting.
+
+**Handling Refunds**
+
+During operation execution, the Handler may receive new assets from the protocols it interacts with. Once an operation is completed, the Handler will look at each of the outstanding assets it has, insert new note commitments into the commitment tree for accounting, then send the underlying assets back to the Teller.
+
+**Note on Whitelisted Protocols**
+
+It is worth noting that the Handler will not support arbitrary contract calls at the onset. In order to ensure the DepositManager controls the inflow of funds, the set of protocols/tokens the Handler can call will currently determined by an in-contract whitelist of contract addresses and function selectors.

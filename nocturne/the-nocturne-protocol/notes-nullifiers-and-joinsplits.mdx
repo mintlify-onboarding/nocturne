@@ -1,0 +1,63 @@
+---
+title: "Notes, Nullifiers, and JoinSplits"
+description: "An introduction to Nocturne's anonymous bookkeeping primitives"
+---
+
+Just like ZCash Sapling, Nocturne performs all bookkeeping through a UTXO system of notes spent via an operation called a JoinSplit, and prevents double-spends via nullifiers. Before we dive further into the protocol, we must first understand these concepts.
+
+**Notes**
+
+A **_note_** can conceptually be thought of as a "dollar bill" with an owner. It takes the form of a record with three fields:
+
+1. `owner`: an anonymous [stealth address](/nocturne/the-nocturne-protocol/notes-and-nullifiers-and-joinsplits) for the note's owner (we will cover these in the next section)
+2. `asset`: a field indicating the asset the note is for. Currently, Nocturne has the capability to support ERC20 (fungible tokens), ERC721 (NFTs), and ERC1155 (semi-fungible tokens).
+3. `value`: a number indicating how much of the asset this note is for.
+
+A **_note commitment_** is a cryptographic hash of the note.
+
+Notes can be acquired in one of three ways:
+
+1. By depositing funds into the Nocturne contracts (i.e. "wrapping" them)
+2. By receiving a "refund" containing all of the unspent assets left over at the end of an "operation"
+3. By receiving a note through a JoinSplit (i.e. a "confidential payment")
+
+On-chain, the Handler contract maintains a Merkle tree of the note commitments for all "valid" notes - that is, notes that were created during one of these three events. We refer to this tree as the **_commitment tree_**. In order to spend a note, one must prove that its note commitment is in the commitment tree.
+
+**Nullifiers**
+
+To spend a note, one needs the owner's [viewing key](/nocturne/the-nocturne-protocol/keys-and-stealth-addresses) and [spending key](/nocturne/the-nocturne-protocol/keys-and-stealth-addresses), the spending key is used to sign the transaction, and the viewing key is used to derive a secret number called a **_nullifier_**.
+
+Every note has one nullifier, and every nullifier corresponds to one note. Nullifiers can only be derived using the owner's viewing key.
+
+On-chain, the Handler contract keeps track of a set of nullifiers. Each time a note is spent, its nullifier is revealed and the contract will check if the revealed nullifier is in the set:
+
+- If it's not in the set, the contract will accept the note, proceed with the transaction, and add the nullifier to the set.
+- If it is in the set, then the contract will reject the note and revert.
+
+Since each nullifier is uniquely tied to a note, this prevents double-spends.
+
+**JoinSplits**
+
+All Notes are spent via an operation called a **_JoinSplit_**. A **_JoinSplit_** is an operation through which two _input notes) are spent by revealing their nullifiers, and two output notes are created. The notes' owner must sign this operation with their [spending key](/nocturne/the-nocturne-protocol/keys-and-stealth-addresses). They can choose the owners and amounts of the output notes, subject to the following constraints:
+
+1. The total value of the input notes equals the total value of the output notes plus an additionally-declared public spend amount, which may be 0.
+2. The input notes and output notes all have the  same asset
+3. Both notes' commitments are in the commitment tree
+
+Only the following information is revealed on-chain:
+
+- the asset to spend
+- the public spend amount (can be 0)
+- the nullifiers for both input notes
+- the commitments for both output notes
+
+<Frame caption="FAn example JoinSplit">
+  <img src="/images/nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits.png" />
+</Frame>
+
+
+By choosing the values/owners of the output notes, we can use a JoinSplit to perform a wide variety of tasks:
+- We can "merge" together small notes by one of the output note values to 0 and the other to the total input value. Going with the "dollar bill" analogy, this is like combining 2 $1 bills into a single $2 bill.
+- We can pay another user within the protocol without revealing the amount by setting the owner to another user's stealth address. We call this a "confidential payment"
+- We can unwrap assets from within the pool for usage in an operation by setting the total output amount to be less than the total input amount and specifying a nonzero public spend amount.
+- We can do a combination of the above - for instance, in a single JoinSplit, I can unwrap some ETH for a Uniswap transfer AND send a confidential ETH payment to a friend.

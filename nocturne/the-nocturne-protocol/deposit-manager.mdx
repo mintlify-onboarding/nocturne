@@ -1,0 +1,18 @@
+---
+title: "Deposit Manager"
+description: "Gated entry point for deposits"
+---
+
+The DepositManager contract serves as a gated entry point for deposits into the Nocturne protocol. Users instantiate deposits by sending their ETH or ERC-20 assets to the contract. The contract will escrow the user's funds until our off-chain screener signs the deposit request and completes the deposit. If the screener decides not to approve a deposit, the user can always retrieve their funds by calling the deposit manager contract again.
+
+**Instantiating Deposits**
+
+Users initiate deposits by first approving the DepositManager to access their deposit assets. They then call the instantiateDeposit method, supplying additional ETH with the call to later compensate the screener for gas. During the deposit instantiation process, a DepositRequest struct is created, containing the spender's address, the encoded asset information, the deposit value, a stealth address, a nonce, and gas compensation. This deposit request is hashed into a 32-byte identifier that is stored to track deposits.
+
+**Retrieving Deposits**
+
+The retrieveDeposit function allows users to withdraw their assets if they change their mind or their deposit request is not accepted by the screener. To retrieve a deposit, the function verifies that the caller is the original spender and checks if the deposit request exists. If the deposit is valid, the assets are transferred back to the spender, and the gas compensation is returned.
+
+**Completing Deposits**
+
+The completeDeposit function is used to finalize a deposit after it has been authorized by a screener. This function takes a deposit request and a signature as input. It validates the signer's address, ensuring it is an authorized screener, and confirms the existence of the deposit request. Once validated, the deposit hash is cleared, the assets are transferred to the Teller, and the gas compensation is distributed to the screener. Any remaining gas compensation left is sent back to the user.
