@@ -66,14 +66,14 @@
                   "nocturne/the-nocturne-protocol/bundler",
                   "nocturne/the-nocturne-protocol/subtree-updater"
               ]
-          },
-          {
-            "group": "User-Facing Components",
-            "pages": [
-                "nocturne/user-facing-components/sdks",
-                "nocturne/user-facing-components/user-facing-endpoints"
-            ]
           }
+        ]
+      },
+      {
+        "group": "User-Facing Components",
+        "pages": [
+            "nocturne/user-facing-components/sdks",
+            "nocturne/user-facing-components/user-facing-endpoints"
         ]
       }
     ],
