@@ -25,7 +25,7 @@ We use the Poseidon hash function defined over the Fp, the BN254 scalar field, i
 ## Key Derivation
 The user's [spending key](/nocturne-the-nocturne-protocol/keys-and-stealth-addresses), which we will refer to as , is a secure-random element of .
 
-> In Nocturne's MetaMask Snap, we derive the  using the snap_getBip44Entropy method at derivation path m / 44' / 6789'. 
+> In Nocturne's MetaMask Snap, we derive the  using the `snap_getBip44Entropy` method at derivation path `m / 44' / 6789'`. 
 
 Let G denote the generator of Baby Jubjub.  The user's spending public key, which we will refer to as PK, is an element of Baby Jubjub defined as PK = sk X G. This is only used in the context of signatures to be verified in-circuit. It never appears on-chain or leaves the client.
 
@@ -63,14 +63,6 @@ Spelled out, signing takes as input the message m and proceeds as follows:
 3. C:=H(PK.X||R.X||R.Y||m)
 4. z:=n-sk⋅c
 5. The signature is the pair (c,z)
-
-To verify, we take as input the message m and signature (c,z) and do the following:
-
-1. n←Fr
-2. R:=n×G
-3. c:= H(PK.X||R.X||R.Y||m)
-4. z:=n-sk⋅c
-5. THe signature is the pair (c,z)
 
 To verify, we take as input the message m and signature (c,z) and do the following:
 

@@ -68,7 +68,7 @@ This gives us plenty of room so we can pack the 3 most-significant bits of `accu
 
 1. `accumulatorHash` is the Fp element represented by the 253 least-significant bits of the "actual" 256-bit `accumulatorHash`
 2. `encodedPathAndHash` is the Fp element represented by the following bits, from most-significant to least-significant:
-    1. `254 - (2*D - log2(B)) - 3` `0` `bits` 
+    1. `254 - (2*D - log2(B)) - 3` `0` bits
     2. the 3 most-significant bits of the actual `accumulatorHash`
     3. the `2*D - log2(B)` bits of the path from the root of the commitment tree to the root of the subtree spanning the batch insertion
 

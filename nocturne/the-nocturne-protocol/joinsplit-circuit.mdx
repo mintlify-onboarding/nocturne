@@ -93,4 +93,62 @@ struct EncodedNote {
 _Within nocturne, all amounts and balances are forced to be 252-bit integers_. This ensures it's impossible to overflow the field.
 
 The `StealthAddress` struct is a "flattened" form of a [stealth address](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses##addresses). We recall that pair of Baby Jubjub curve elements  , and represent the  and  coordinates of both curve elements as struct fields.
-The encoding process for a Note is to encode the asset and then pull out the encodedAssetAddr and encodedAssetId fields. 
+The encoding process for a `Note` is to encode the `asset` and then pull out the `encodedAssetAddr` and `encodedAssetId` fields. 
+
+Other specially-treated inputs
+
+We define `opDigest` as a hash of an "operation" the JoinSplit is associated with. The hash is computed outside the circuit using Keccak and is reduced modulo p to an element of Fp. The circuit assumes that `opDigest` was independently computed by the verifier. 
+
+For the purposes of a recipient being able to know the sender, we use ElGamal encryption in-circuit to encrypt the sender's canonical address. The ciphertext is of the form (C1, C2)∈G2
+
+For efficiency, we only encrypt in the X coordinat of the sender's canonical address. Similarly, to save public inputs, we only include the X coordinate of C1 and C2. To recover the Y coordinate, the verifier can use the curve equation outside the circuit.
+
+### Statement to Prove
+
+The JoinSplit circuit has a total of 11 public inputs:
+
+1. `commitmentTreeRoot` - the current [commitment tree root](/nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits)
+2. `encodedAssetAddr` - The the [encodedAssetAddr](/nocturne/the-nocturne-protocol/joinsplit-circuit#asset-encoding) field of the encoded asset being spent
+3. `encodedAssetId` - The the [encodedAssetId](/nocturne/the-nocturne-protocol/joinsplit-circuit#asset-encoding) field of the encoded asset being spent
+4. `opDigest` - The operation digest
+5. `publicSpend` - The amount to unwrap publicly
+6. `newNoteACommitment` - The note commitment for the first output note
+7. `newNoteBCommitment` - The note commitment for the second output note
+8. `nullifierA` - The nullifier for the first input note
+9. `nullifierB` - The nullifier for the second input note
+10. `encSenderCanonAddrC1X` - The x-coordinate of the first component of the ciphertext of the sender's canonical address
+11. `encSenderCanonAddrC2X` - the x-coordinate of the second component of the ciphertext of the sender's canonical address
+
+And requires the following private data:
+
+1. `vk`: the [viewing key](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#key-derivation)
+2. `vkNonce`: the[ nonce used in viewing key derivation](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#key-derivation)
+3. `spendPK`: the [spending public key](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#key-derivation)
+4. `(c, z)`: a [Schnorr signature](/nocturne/the-nocturne-protocol/joinsplit-circuit#asset-encoding) of `opDigest`
+5. `oldNoteA`: an EncodedNote representing the first input note
+6. `oldNoteB`: an EncodedNote representing the second input note
+7. `newNoteA`: an EncodedNote representing the first output note
+8. `newNoteB`: an EncodedNote representing the second output note
+9. `MembershipProofA`: a Merkle membership proof for oldNoteA's [note commitment](/nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits) in the commitment tree
+10. `MembershipProofB`: a Merkle membership proof for oldNoteB's [note commitment]((/nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits)) in the commitment tree
+11. `receiverCanonAddr`: the canonical address of the receiver
+12. senderCanonAddr: the canonical address of the receiver
+13. encRandomness: a random nonce∈Frfor ElGamal
+
+We prove that the following conditions hold true:
+
+1. `vk` and `vkNonce` correctly correspond to `spendPk`
+2. `senderCanonAddr` is indeed the canonical address corresponding to `vk`
+3. the signature `(c, z)` is valid
+4. `oldNoteA.owner` and `oldNoteB.owner` are well-formed [stealth addresses](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#addresses)
+5. `oldNoteA.owner` and oldNoteB.owner are both [owned](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#addresses) by `vk`
+6. `MembershipProofA.leaf` is the note commitment for `oldNoteA`
+7. `MembershipProofB.leaf` is the note commitment for `oldNoteB`, or `oldNoteB.value = 0` (we don't care about `oldNoteB` if its value is `0`)
+8. `MembershipProofA` is a valid Merkle membership proof against `commitmentTreeRoot`
+9. `MembershipProofB` is a valid Merkle membership proof against `commitmentTreeRoot`, or `oldNoteB.value = 0` (we don't care about `oldNoteB` if its value is `0`)
+10. `newNoteA.owner.H2 = senderCanonAddr` and `newNoteA.owner.H1 =`[G](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#algebraic-primitives) (i.e. `newNoteA.owner` is the sender's [canonical stealth address](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses))
+11. `newNoteB.owner.H2 = receiverCanonAddr` and `newNoteB.owner.H1 =`[G](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses#algebraic-primitives) (i.e. `newNoteB.owner` is the receiver's [canonical stealth address](/nocturne/the-nocturne-protocol/keys-signatures-and-addresses))
+12. `oldNoteA.value + oldNoteB.value = newNoteA.value + newNoteB.value + publicSpend`
+13. `newNoteACommitment` is the note commitment for `newNoteA`
+14. `newNoteBCommitment` is the note commitment for `newNoteB`
+15. (`encSenderCanonAddrC1X, encSenderCanonAddrC2X`) is the ciphertext one would get after encrypting `senderCanonAddr` using ElGamal with nonce `encRandomness`.
