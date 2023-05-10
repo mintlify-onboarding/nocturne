@@ -61,16 +61,16 @@ Nocturne uses Schnorr signatures over Baby Jubjub. The secret key is the spendin
 
 Spelled out, signing takes as input the message m and proceeds as follows:
 
-1. <Latex>n←Fr​</Latex>
-2. <Latex>R:=n×G</Latex>
-3. <Latex>C:=H(PK.X||R.X||R.Y||m)</Latex>
-4. <Latex>z:=n-sk⋅c</Latex>
-5. The signature is the pair <Latex>(c,z)</Latex>
+1. n←Fr​
+2. R:=n×G
+3. C:=H(PK.X||R.X||R.Y||m)
+4. z:=n-sk⋅c
+5. The signature is the pair (c,z)
 
 To verify, we take as input the message m and signature (c,z) and do the following:
 
-1. <Latex>Z:=z×G</Latex>
-2. <Latex>P:=c×PK</Latex>
-3. <Latex>R:=Z+PK</Latex>
-4. <Latex>cp:=H(PK.X ∣∣ R.X ∣∣ R.Y ∣∣ m)</Latex>
+1. Z:=z×G
+2. P:=c×PK
+3. R:=Z+PK
+4. cp:=H(PK.X ∣∣ R.X ∣∣ R.Y ∣∣ m)
 5. Accept the signature if cp=c. Otherwise, it's invalid.
