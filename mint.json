@@ -1,4 +1,5 @@
 {
+  "schema": "https://mintlify.com/schema.json",
     "name": "Nocturne",
     "logo": {
       "light": "/logo/light.png",
@@ -18,7 +19,8 @@
         }
       ],
     "modeToggle": {
-        "default": "dark"
+        "default": "dark",
+        "isHidden": true
     },
     "navigation": [
       {
