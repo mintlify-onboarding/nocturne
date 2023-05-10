@@ -1,11 +1,11 @@
 ---
-title: "Keys, Signatures, and Addresses"
-description: "Details about algebraic primitives, key derivation, canonical address, address re-randomization, and signatures"
+title: 'Keys, Signatures, and Addresses'
+description: 'Details about algebraic primitives, key derivation, canonical address, address re-randomization, and signatures'
 ---
 
 ## Algebraic Primitives
 
-Unless otherwise specified, all values are assumed to be elements of the Scalar field of BN254 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197). We will refer to this field as the "BN254 Scalar field" or  for short. We will use  to refer to the order of the BN254 scalar field.
+Unless otherwise specified, all values are assumed to be elements of the Scalar field of BN254 as defined in [EIP-197](https://eips.ethereum.org/EIPS/eip-197). We will refer to this field as the "BN254 Scalar field" or <Latex>Fp​</Latex> for short. We will use to refer to the order of the BN254 scalar field.
 
 For all elliptic curve cryptography, including our addressing and signature schemes, we use the Baby Jubjub curve, the curve whose base field is Fp as defined in [EIP-2494](https://eips.ethereum.org/EIPS/eip-2494). All operations are performed in Baby Jubjub's prime-order subgroup, which we will refer to as "Baby Jubjub", or G (blackboard "G" as opposed to regular "G") for short.
 
@@ -20,26 +20,28 @@ We will use additive notation. More specifically we use...
 Furthermore, we will use all-capital letters for curve elements and all-lowercase lettrs for field elements.
 
 ## Hashing
-We use the Poseidon hash function defined over the Fp, the BN254 scalar field, instantiated using the [parameters set in `circomlib`'s implementation](https://github.com/iden3/circomlib/blob/master/circuits/poseidon_constants.circom). We will denote this function H. 
+
+We use the Poseidon hash function defined over the Fp, the BN254 scalar field, instantiated using the [parameters set in `circomlib`'s implementation](https://github.com/iden3/circomlib/blob/master/circuits/poseidon_constants.circom). We will denote this function H.
 
 ## Key Derivation
+
 The user's [spending key](/nocturne-the-nocturne-protocol/keys-and-stealth-addresses), which we will refer to as , is a secure-random element of .
 
-> In Nocturne's MetaMask Snap, we derive the  using the `snap_getBip44Entropy` method at derivation path `m / 44' / 6789'`. 
+> In Nocturne's MetaMask Snap, we derive the using the `snap_getBip44Entropy` method at derivation path `m / 44' / 6789'`.
 
-Let G denote the generator of Baby Jubjub.  The user's spending public key, which we will refer to as PK, is an element of Baby Jubjub defined as PK = sk X G. This is only used in the context of signatures to be verified in-circuit. It never appears on-chain or leaves the client.
+Let G denote the generator of Baby Jubjub. The user's spending public key, which we will refer to as PK, is an element of Baby Jubjub defined as PK = sk X G. This is only used in the context of signatures to be verified in-circuit. It never appears on-chain or leaves the client.
 
 The user's [viewing key](/nocturne-the-nocturne-protocol/keys-and-stealth-addresses) is an element of Fr defined as sk = H(PK.X ∣∣ PK.Y ∣∣ vkNonce), where PK.X,PK.Y∈Fp are the x and y coordinates of PK respectively, vkNonce∈Fp, and vkNonce must be chosen such that the output of the hash is an element of Fr.
 
-That last provision is needed because H returns an element of Fp, but we need an element of Fr. A reduction modulo r would bias the key generation, and using Poseidon over Fr would be prohibitively expensive in-circuit. But this approach suffers from neither issue - during key generation, we can increment vkNonce and try again if the output of the hash is not an element of Fr. 
+That last provision is needed because H returns an element of Fp, but we need an element of Fr. A reduction modulo r would bias the key generation, and using Poseidon over Fr would be prohibitively expensive in-circuit. But this approach suffers from neither issue - during key generation, we can increment vkNonce and try again if the output of the hash is not an element of Fr.
 
 > In theory, rejection sampling like this does come at a small performance cost. ~91% of the possible vkNonce>r, so we expect that, on average, it will take 10-11 tries to find a "good" nonce. In practice, the cost is negligible - 11 attempts takes ~30ms with a very naive implementation.
 
 ## Addresses
 
-A user's [canonical address](/nocturne/the-nocturne-protocol/keys-and-stealth-addresses), which we will refer to as "the user's canonical address", or C for short, is a Baby Jubjub curve element defined as C=vk×G. 
+A user's [canonical address](/nocturne/the-nocturne-protocol/keys-and-stealth-addresses), which we will refer to as "the user's canonical address", or C for short, is a Baby Jubjub curve element defined as C=vk×G.
 
-A user's [stealth address]((/nocturne/the-nocturne-protocol/keys-and-stealth-addresses)) is any pair of Baby Jubjub points (H1,H2)∈gG2 such that vk × H1 = H2. There are many stealth addresses for any given user. Without any other information, the association between any two stealth addresses cannot be determined without access to the underlying viewing key.
+A user's [stealth address](<(/nocturne/the-nocturne-protocol/keys-and-stealth-addresses)>) is any pair of Baby Jubjub points (H1,H2)∈gG2 such that vk × H1 = H2. There are many stealth addresses for any given user. Without any other information, the association between any two stealth addresses cannot be determined without access to the underlying viewing key.
 
 Before randomizing a user's canonical address C, it needs to be mapped to a pair of points C→(G,C). We refer to this (G,C) pair as the "canonical stealth address" even though it's not really a "stealth address" because we haven't randomized it yet.
 
@@ -55,7 +57,7 @@ By (0,1), we specifically mean the curve point (0,1), which is the "zero", or "a
 
 ## Signatures
 
-Nocturne uses Schnorr signatures over Baby Jubjub. The secret key is the spending key sk, and the public key is the spending public key PK. 
+Nocturne uses Schnorr signatures over Baby Jubjub. The secret key is the spending key sk, and the public key is the spending public key PK.
 Spelled out, signing takes as input the message m and proceeds as follows:
 
 1. n←Fr
@@ -70,7 +72,6 @@ To verify, we take as input the message m and signature (c,z) and do the followi
 2. P:=c×PK
 3. R:=Z+PK
 4. cp:=H(PK.X ∣∣ R.X ∣∣ R.Y ∣∣ m)
-5. Accept the signature if cp=c. Otherwise, it's invalid. 
+5. Accept the signature if cp=c. Otherwise, it's invalid.
 
 ​
- 
