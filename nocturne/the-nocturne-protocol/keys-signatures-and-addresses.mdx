@@ -36,3 +36,15 @@ The user's [viewing key](/nocturne-the-nocturne-protocol/keys-and-stealth-addres
 That last provision is needed because <Latex>H</Latex> returns an element of <Latex>Fp​</Latex>, but we need an element of <Latex>Fr​</Latex>. A reduction modulo <Latex>r</Latex> would bias the key generation, and using Poseidon over <Latex>Fr​</Latex> would be prohibitively expensive in-circuit. But this approach suffers from neither issue - during key generation, we can increment vkNonce and try again if the output of the hash is not an element of <Latex>Fr​</Latex>.
 
 > In theory, rejection sampling like this does come at a small performance cost. ~91% of the possible <Latex>vkNonce>r</Latex>, so we expect that, on average, it will take 10-11 tries to find a "good" nonce. In practice, the cost is negligible - 11 attempts takes ~30ms with a very naive implementation.
+
+## Addresses
+
+A user's [canonical address](/nocturne/the-nocturne-protocol/keys-and-stealth-addresses), which we will refer to as "the user's canonical address", or <Latex>C</Latex> for short, is a Baby Jubjub curve element defined as <Latex>C=vk×G</Latex>.
+
+A user's [stealth address](<(/nocturne/the-nocturne-protocol/keys-and-stealth-addresses)>) is any pair of Baby Jubjub points <Latex>(H1​,H2​)∈G2</Latex> such that <Latex>vk×H1​=H2​</Latex>. There are many stealth addresses for any given user. Without any other information, the association between any two stealth addresses cannot be determined without access to the underlying viewing key.
+
+Before randomizing a user's canonical address <Latex>C</Latex>, it needs to be mapped to a pair of points <Latex>C→(G,C)</Latex>. We refer to this <Latex>(G,C)</Latex> pair as the "canonical stealth address" even though it's not really a "stealth address" because we haven't randomized it yet.
+
+To randomize a stealth address pair <Latex>S=(H1​,H2​)</Latex>, we sample a random scalar <Latex> s←Fr​</Latex>and scalar-multiply into both curve elements, i.e. <Latex>S′=(s×H1​,s×H2​)</Latex>. Note that any user may randomize any stealth address without knowing the underlying viewing key or canonical address. All they need is a random number generator and an existing stealth address. We sometimes call this "re-randomization".
+
+Given a user's viewing key <Latex>vk</Latex>, we say the <Latex>vk</Latex> "owns" a stealth address if the address was generated from <Latex>vk</Latex>. This is true if and only if the following equation holds true:
