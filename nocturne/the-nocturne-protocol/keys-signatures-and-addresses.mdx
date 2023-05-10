@@ -48,3 +48,29 @@ Before randomizing a user's canonical address <Latex>C</Latex>, it needs to be m
 To randomize a stealth address pair <Latex>S=(H1​,H2​)</Latex>, we sample a random scalar <Latex> s←Fr​</Latex>and scalar-multiply into both curve elements, i.e. <Latex>S′=(s×H1​,s×H2​)</Latex>. Note that any user may randomize any stealth address without knowing the underlying viewing key or canonical address. All they need is a random number generator and an existing stealth address. We sometimes call this "re-randomization".
 
 Given a user's viewing key <Latex>vk</Latex>, we say the <Latex>vk</Latex> "owns" a stealth address if the address was generated from <Latex>vk</Latex>. This is true if and only if the following equation holds true:
+
+<Latex>8 × (vk × H1 - H2) = (0,1)</Latex>
+
+By <Latex>(0,1)</Latex>, we specifically mean the curve point <Latex>(0,1)</Latex>, which is the "zero", or "additive identity" element of Baby Jubjub's curve group (not the prime-order subgroup). This gives the user a way to trace their own transactions.
+
+> The high level intuition behind this is that, each time we randomize a stealth address, we're effectively sending both points to a new coset of Baby Jubjub's prime-order subgroup. It's easy to see that, for any stealth address generated using viewing key <Latex>vk</Latex> - including the canonical stealth address - if <Latex>H1​</Latex> is in the coset with index <Latex>X</Latex>, then <Latex>H2​</Latex> is in the coset with index <Latex>vk×X</Latex>. Therefore, if we know the user's viewing key, checking if <Latex>vk</Latex> owns a stealth address is equivalent to checking if <Latex>vk×H1​</Latex> is in the same coset as <Latex>H2​</Latex>. And that is equivalent to the equation above.
+
+## Signatures
+
+Nocturne uses Schnorr signatures over Baby Jubjub. The secret key is the spending key <Latex>sk</Latex>, and the public key is the spending public key <Latex>PK</Latex>.
+
+Spelled out, signing takes as input the message m and proceeds as follows:
+
+1. <Latex>n←Fr​</Latex>
+2. <Latex>R:=n×G</Latex>
+3. <Latex>C:=H(PK.X||R.X||R.Y||m)</Latex>
+4. <Latex>z:=n-sk⋅c</Latex>
+5. The signature is the pair <Latex>(c,z)</Latex>
+
+To verify, we take as input the message m and signature (c,z) and do the following:
+
+1. <Latex>Z:=z×G</Latex>
+2. <Latex>P:=c×PK</Latex>
+3. <Latex>R:=Z+PK</Latex>
+4. <Latex>cp:=H(PK.X ∣∣ R.X ∣∣ R.Y ∣∣ m)</Latex>
+5. Accept the signature if cp=c. Otherwise, it's invalid.
