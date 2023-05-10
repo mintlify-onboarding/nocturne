@@ -1,92 +1,98 @@
 {
   "schema": "https://mintlify.com/schema.json",
-    "name": "Nocturne",
-    "logo": {
-      "light": "/logo/light.png",
-      "dark": "/logo/dark.png"
+  "name": "Nocturne",
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#A980E3",
+    "light": "#D6B9FF",
+    "dark": "#7C4EBD"
+  },
+  "topLeveLinks": [
+    {
+      "name": "Home",
+      "url": "https://nocturnelabs.xyz"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Twitter",
+      "icon": "twitter",
+      "url": "https://twitter.com/nocturne_xyz"
+    }
+  ],
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": true
+  },
+  "navigation": [
+    {
+      "group": "Introduction",
+      "pages": [
+        "nocturne/introduction/one-pager",
+        "nocturne/introduction/compliance"
+      ]
     },
-    "favicon": "/favicon.png",
-    "colors": {
-      "primary": "#A980E3",
-      "light": "#D6B9FF",
-      "dark": "#7C4EBD"
-    },
-    "anchors": [
-        {
-          "name": "Twitter",
-          "icon": "twitter",
-          "url": "https://twitter.com/nocturne_xyz"
-        }
-      ],
-    "modeToggle": {
-        "default": "dark",
-        "isHidden": true
-    },
-    "navigation": [
-      {
-        "group": "Introduction",
-        "pages": [
-            "nocturne/introduction/one-pager",
-            "nocturne/introduction/compliance"
-        ]
-      },
-      {
-        "group": "The Nocturne Protocol",
-        "pages": [
-            "nocturne/the-nocturne-protocol/overview",
-            {
-                "group": "Preliminaries",
-                "icon": "clipboard",
-                "pages": [
-                    "nocturne/the-nocturne-protocol/preliminaries",
-                    "nocturne/the-nocturne-protocol/keys-and-stealth-addresses",
-                    "nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits"
-                ]
-            },
-            {
-                "group": "Contracts",
-                "icon": "file-contract",
-                "pages": [
-                    "nocturne/the-nocturne-protocol/contracts",
-                    "nocturne/the-nocturne-protocol/deposit-manager",
-                    "nocturne/the-nocturne-protocol/teller",
-                    "nocturne/the-nocturne-protocol/handler"
-                ]
-            },
-            {
-                "group": "Cryptography and Circuits",
-                "icon": "memory",
-                "pages": [
-                    "nocturne/the-nocturne-protocol/cryptography-and-circuits",
-                    "nocturne/the-nocturne-protocol/keys-signatures-and-addresses",
-                    "nocturne/the-nocturne-protocol/joinsplit-circuit",
-                    "nocturne/the-nocturne-protocol/subtree-update-circuit"
-                ]
-            },
-            {
-              "group": "Off-Chain Actors",
-              "icon": "user",
+    {
+      "group": "The Nocturne Protocol",
+      "pages": [
+          "nocturne/the-nocturne-protocol/overview",
+          {
+              "group": "Preliminaries",
+              "icon": "clipboard",
               "pages": [
-                  "nocturne/the-nocturne-protocol/off-chain-actors",
-                  "nocturne/the-nocturne-protocol/deposit-screener",
-                  "nocturne/the-nocturne-protocol/bundler",
-                  "nocturne/the-nocturne-protocol/subtree-updater"
+                "nocturne/the-nocturne-protocol/preliminaries",
+                "nocturne/the-nocturne-protocol/keys-and-stealth-addresses",
+                "nocturne/the-nocturne-protocol/notes-nullifiers-and-joinsplits"
               ]
-          }
-        ]
-      },
-      {
-        "group": "User-Facing Components",
-        "pages": [
-            "nocturne/user-facing-components/sdks",
-            "nocturne/user-facing-components/user-facing-endpoints"
-        ]
-      }
-    ],
-    "footerSocials":
-      {
-          "twitter": "https://twitter.com/nocturne_xyz"
-      },
-      "backgroundImage": "/background.png"
+          },
+          {
+              "group": "Contracts",
+              "icon": "file-contract",
+              "pages": [
+                  "nocturne/the-nocturne-protocol/contracts",
+                  "nocturne/the-nocturne-protocol/deposit-manager",
+                  "nocturne/the-nocturne-protocol/teller",
+                  "nocturne/the-nocturne-protocol/handler"
+              ]
+          },
+          {
+              "group": "Cryptography and Circuits",
+              "icon": "memory",
+              "pages": [
+                  "nocturne/the-nocturne-protocol/cryptography-and-circuits",
+                  "nocturne/the-nocturne-protocol/keys-signatures-and-addresses",
+                  "nocturne/the-nocturne-protocol/joinsplit-circuit",
+                  "nocturne/the-nocturne-protocol/subtree-update-circuit"
+              ]
+          },
+          {
+            "group": "Off-Chain Actors",
+            "icon": "user",
+            "pages": [
+                "nocturne/the-nocturne-protocol/off-chain-actors",
+                "nocturne/the-nocturne-protocol/deposit-screener",
+                "nocturne/the-nocturne-protocol/bundler",
+                "nocturne/the-nocturne-protocol/subtree-updater"
+            ]
+        }
+      ]
+    },
+    {
+      "group": "User-Facing Components",
+      "pages": [
+          "nocturne/user-facing-components/sdks",
+          "nocturne/user-facing-components/user-facing-endpoints"
+      ]
+    }
+  ],
+  "footerSocials":
+    {
+        "twitter": "https://twitter.com/nocturne_xyz"
+    },
+    "backgroundImage": "/background.png"
   }
   
