@@ -84,6 +84,7 @@
     "footerSocials":
       {
           "twitter": "https://twitter.com/nocturne_xyz"
-      }
+      },
+      "backgroundImage": "/background.png"
   }
   
