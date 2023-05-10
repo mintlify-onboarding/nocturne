@@ -34,6 +34,7 @@
             "nocturne/the-nocturne-protocol/overview",
             {
                 "group": "Preliminaries",
+                "icon": "clipboard",
                 "pages": [
                     "nocturne/the-nocturne-protocol/preliminaries",
                     "nocturne/the-nocturne-protocol/keys-and-stealth-addresses",
@@ -42,6 +43,7 @@
             },
             {
                 "group": "Contracts",
+                "icon": "file-contract",
                 "pages": [
                     "nocturne/the-nocturne-protocol/contracts",
                     "nocturne/the-nocturne-protocol/deposit-manager",
@@ -51,6 +53,7 @@
             },
             {
                 "group": "Cryptography and Circuits",
+                "icon": "memory",
                 "pages": [
                     "nocturne/the-nocturne-protocol/cryptography-and-circuits",
                     "nocturne/the-nocturne-protocol/keys-signatures-and-addresses",
@@ -60,6 +63,7 @@
             },
             {
               "group": "Off-Chain Actors",
+              "icon": "user",
               "pages": [
                   "nocturne/the-nocturne-protocol/off-chain-actors",
                   "nocturne/the-nocturne-protocol/deposit-screener",

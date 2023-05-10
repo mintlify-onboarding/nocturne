@@ -1,5 +1,6 @@
 ---
-title: "Overview"
+title: 'Overview'
+icon: 'moon'
 ---
 
 ## High Level
@@ -54,10 +55,10 @@ struct Action {
 
 The semantics of an operation is as follows:
 
-* Each joinsplit specifies an asset and amount to "unwrap" for the contract call (and optionally a confidential payment). The list `joinSplits` specifies all the assets the user wants to unwrap for their operation as well as any confidential payments.
+- Each joinsplit specifies an asset and amount to "unwrap" for the contract call (and optionally a confidential payment). The list `joinSplits` specifies all the assets the user wants to unwrap for their operation as well as any confidential payments.
 
-* The `ownerAddr` is a stealth address of the user who is initiating the transaction.
+- The `ownerAddr` is a stealth address of the user who is initiating the transaction.
 
-* The array `actions` encodes the intended contract calls of the operation.
+- The array `actions` encodes the intended contract calls of the operation.
 
 Given an `Operation` with valid inputs, the Handler contract will unwrap all tokens, perform the provided contract calls, then refund any remaining tokens back to the user anonymously.
