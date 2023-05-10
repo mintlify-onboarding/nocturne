@@ -11,7 +11,7 @@
     "light": "#D6B9FF",
     "dark": "#7C4EBD"
   },
-  "topLeveLinks": [
+  "topbarLinks": [
     {
       "name": "Home",
       "url": "https://nocturnelabs.xyz"
